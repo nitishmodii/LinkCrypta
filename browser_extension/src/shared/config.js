@@ -1,15 +1,22 @@
 // LinkCrypta Extension Configuration
 const CONFIG = {
-  // Firebase configuration (matches your Flutter app)
+  // Firebase configuration (matches your Flutter app — linkcrypta-61258)
   FIREBASE_CONFIG: {
-    apiKey: "your-api-key-here", // Replace with your Firebase config
-    authDomain: "your-project.firebaseapp.com",
-    projectId: "your-project-id",
-    storageBucket: "your-project.appspot.com",
-    messagingSenderId: "123456789",
-    appId: "your-app-id"
+    apiKey: "AIzaSyBTNuUpu41PKYBsbPTUGGKzHVhPNw9-Pmc",
+    authDomain: "linkcrypta-61258.firebaseapp.com",
+    projectId: "linkcrypta-61258",
+    storageBucket: "linkcrypta-61258.firebasestorage.app",
+    messagingSenderId: "795878816417",
+    appId: "1:795878816417:web:your_web_app_id"
   },
-  
+
+  // Firestore REST API base URL
+  FIRESTORE_BASE: "https://firestore.googleapis.com/v1/projects/linkcrypta-61258/databases/(default)/documents",
+
+  // Firebase Auth REST API
+  FIREBASE_AUTH_BASE: "https://identitytoolkit.googleapis.com/v1",
+  FIREBASE_TOKEN_URL: "https://securetoken.googleapis.com/v1/token",
+
   // Extension settings
   EXTENSION: {
     NAME: "LinkCrypta",
@@ -17,7 +24,7 @@ const CONFIG = {
     POPUP_WIDTH: 400,
     POPUP_HEIGHT: 600,
     AUTO_LOCK_TIMEOUT: 300000, // 5 minutes
-    SYNC_INTERVAL: 30000 // 30 seconds
+    SYNC_INTERVAL: 60000 // 60 seconds
   },
   
   // Security settings
@@ -40,10 +47,17 @@ const CONFIG = {
   // Storage keys
   STORAGE_KEYS: {
     USER_TOKEN: "linkcrypta_user_token",
+    REFRESH_TOKEN: "linkcrypta_refresh_token",
+    TOKEN_EXPIRY: "linkcrypta_token_expiry",
+    FIREBASE_UID: "linkcrypta_firebase_uid",
+    USER_EMAIL: "linkcrypta_user_email",
+    USER_NAME: "linkcrypta_user_name",
+    USER_PHOTO: "linkcrypta_user_photo",
     ENCRYPTED_DATA: "linkcrypta_encrypted_data",
     USER_SETTINGS: "linkcrypta_user_settings",
     SYNC_TIMESTAMP: "linkcrypta_sync_timestamp",
-    MASTER_KEY_HASH: "linkcrypta_master_key_hash"
+    MASTER_KEY_HASH: "linkcrypta_master_key_hash",
+    CACHED_PASSWORDS: "linkcrypta_cached_passwords"
   },
   
   // Form field selectors for auto-detection

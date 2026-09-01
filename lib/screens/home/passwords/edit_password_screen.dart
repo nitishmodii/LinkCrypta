@@ -71,7 +71,7 @@ class _EditPasswordScreenState extends State<EditPasswordScreen> {
       final dataProvider = context.read<DataProvider>();
       
       // Encrypt the password before updating
-      final encryptedPassword = EncryptionService.encrypt(_passwordController.text);
+      final encryptedPassword = EncryptionService.encryptString(_passwordController.text);
       
       // Create updated password entry
       final updatedPassword = widget.password.copyWith(

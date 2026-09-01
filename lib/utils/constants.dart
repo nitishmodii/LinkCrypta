@@ -91,6 +91,7 @@ class AppConstants {
     'Education',
     'Health',
     'Travel',
+    'Browser Extension',
   ];
 
   static const List<String> defaultLinkCategories = [

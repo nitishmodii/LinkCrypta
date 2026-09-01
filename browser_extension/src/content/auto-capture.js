@@ -8,7 +8,7 @@ class AutoCaptureService {
     this.formSubmissionHandlers = new Map();
     this.registrationDetector = null;
     this.lastCaptureTime = 0;
-    this.captureDelay = 1000; // Prevent duplicate captures within 1 second
+    this.captureDelay = 30000; // Prevent duplicate captures within 30 seconds
     this.capturedData = new Map(); // Track captured data to prevent duplicates
   }
 
@@ -30,12 +30,42 @@ class AutoCaptureService {
       // Setup registration detection
       this.setupRegistrationDetection();
       
-      // Setup input change listeners for real-time capture
-      this.setupInputChangeListeners();
+      // NOTE: Input change listeners removed — capture only on form submit,
+      // button click, or Enter key to avoid spamming the user with popups.
+
+      // Check for pending captures from previous page (form submissions navigate away)
+      await this.checkPendingCaptures();
 
       console.log('Auto-capture service initialized');
     } catch (error) {
       console.error('Failed to initialize auto-capture service:', error);
+    }
+  }
+
+  // Check for pending captures from a previous page (e.g., form submission that navigated away)
+  async checkPendingCaptures() {
+    try {
+      const result = await chrome.storage.local.get(['pendingCapture']);
+      const pendingCapture = result.pendingCapture;
+      
+      if (pendingCapture && pendingCapture.data) {
+        // Clear the pending capture immediately so it doesn't show again
+        await chrome.storage.local.remove(['pendingCapture']);
+        
+        // Check if this capture is recent (within last 30 seconds)
+        const age = Date.now() - (pendingCapture.timestamp || 0);
+        if (age < 30000) {
+          console.log('🔐 Showing pending capture from previous page:', pendingCapture.data.domain);
+          
+          // Show the "Save Password?" notification on this page
+          this.showCaptureNotification(pendingCapture.data);
+        }
+      }
+    } catch (error) {
+      // Silently ignore — extension context might be invalidated
+      if (!error.message?.includes('Extension context invalidated')) {
+        console.error('Error checking pending captures:', error);
+      }
     }
   }
 
@@ -129,99 +159,154 @@ class AutoCaptureService {
   }
 
   // Handle form submission
-  async handleFormSubmission(event) {
+  handleFormSubmission(event) {
     if (!this.isEnabled) return;
 
     const form = event.target;
     if (!form || form.tagName !== 'FORM') return;
 
     try {
-      const credentials = await this.extractCredentialsFromForm(form);
-      
-      if (credentials && this.isValidCredentials(credentials)) {
-        const captureData = {
-          ...credentials,
-          captureType: 'form_submission',
-          timestamp: Date.now(),
-          url: window.location.href,
-          domain: window.location.hostname,
-          formAction: form.action || window.location.href,
-          isRegistration: this.isRegistrationForm(form)
-        };
+      // Extract credentials SYNCHRONOUSLY before page navigates away
+      const usernameField = this.findUsernameField(form);
+      const passwordField = this.findPasswordField(form);
+      const emailField = this.findEmailField(form);
 
-        await this.captureCredentials(captureData);
-      }
+      if (!passwordField || !passwordField.value.trim()) return;
+
+      const username = usernameField?.value.trim() || emailField?.value.trim() || '';
+      const password = passwordField.value.trim();
+
+      if (!username || !password) return;
+
+      const captureData = {
+        username,
+        password,
+        email: emailField?.value.trim() || (username.includes('@') ? username : ''),
+        title: this.generateTitle(window.location.hostname, username),
+        url: window.location.href,
+        domain: window.location.hostname,
+        favicon: this.getFavicon(),
+        captureType: 'form_submission',
+        timestamp: Date.now(),
+        formAction: form.action || window.location.href,
+        isRegistration: this.isRegistrationForm(form)
+      };
+
+      // Fire-and-forget: send to background before page navigates
+      // Don't await — the page will navigate away
+      chrome.runtime.sendMessage({
+        type: 'CREDENTIALS_CAPTURED',
+        data: captureData,
+        showOnNextPage: true  // Tell background to show popup on next page
+      }).catch(() => {});
+
+      console.log('🔐 Credentials sent to background before navigation');
     } catch (error) {
       console.error('Error handling form submission:', error);
     }
   }
 
-  // Handle button clicks for AJAX submissions
-  async handleButtonClick(event) {
+  // Handle button clicks for AJAX submissions and formless logins
+  handleButtonClick(event) {
     if (!this.isEnabled) return;
 
-    const button = event.target;
-    if (!this.isSubmitButton(button)) return;
+    const button = event.target.closest('button, input[type="submit"], [role="button"], a');
+    if (!button || !this.isSubmitButton(button)) return;
 
-    // Wait a bit for any form validation or processing
-    setTimeout(async () => {
-      try {
-        const form = this.findParentForm(button) || this.findNearbyCredentialFields(button);
-        
-        if (form) {
-          const credentials = await this.extractCredentialsFromElement(form);
-          
-          if (credentials && this.isValidCredentials(credentials)) {
-            const captureData = {
-              ...credentials,
-              captureType: 'button_click',
-              timestamp: Date.now(),
-              url: window.location.href,
-              domain: window.location.hostname,
-              isRegistration: this.isRegistrationContext()
-            };
+    try {
+      // Extract credentials IMMEDIATELY before page might navigate
+      const passwordFields = document.querySelectorAll('input[type="password"]');
+      if (passwordFields.length === 0) return;
 
-            await this.captureCredentials(captureData);
-          }
+      const passwordField = passwordFields[0];
+      const password = passwordField.value.trim();
+      if (!password) return;
+
+      // Find username/email field
+      const allInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[name*="user" i], input[name*="email" i], input[id*="user" i], input[id*="email" i]');
+      let username = '';
+      for (const input of allInputs) {
+        if (input.value.trim() && input.type !== 'password') {
+          username = input.value.trim();
+          break;
         }
-      } catch (error) {
-        console.error('Error handling button click:', error);
       }
-    }, 1000);
+
+      if (!username) return;
+
+      const captureData = {
+        username,
+        password,
+        email: username.includes('@') ? username : '',
+        title: this.generateTitle(window.location.hostname, username),
+        url: window.location.href,
+        domain: window.location.hostname,
+        favicon: this.getFavicon(),
+        captureType: 'button_click',
+        timestamp: Date.now(),
+        isRegistration: this.isRegistrationContext()
+      };
+
+      // Fire-and-forget: send to background before page navigates
+      chrome.runtime.sendMessage({
+        type: 'CREDENTIALS_CAPTURED',
+        data: captureData,
+        showOnNextPage: true
+      }).catch(() => {});
+
+      console.log('🔐 Credentials captured on button click:', captureData.domain);
+    } catch (error) {
+      console.error('Error handling button click:', error);
+    }
   }
 
   // Handle Enter key in password fields
-  async handleKeyDown(event) {
+  handleKeyDown(event) {
     if (!this.isEnabled || event.key !== 'Enter') return;
 
     const field = event.target;
     if (!this.isPasswordField(field)) return;
 
-    // Wait a bit for any form processing
-    setTimeout(async () => {
-      try {
-        const form = this.findParentForm(field) || this.findNearbyCredentialFields(field);
-        
-        if (form) {
-          const credentials = await this.extractCredentialsFromElement(form);
-          
-          if (credentials && this.isValidCredentials(credentials)) {
-            const captureData = {
-              ...credentials,
-              captureType: 'enter_key',
-              timestamp: Date.now(),
-              url: window.location.href,
-              domain: window.location.hostname,
-              isRegistration: this.isRegistrationContext()
-            };
+    try {
+      const password = field.value.trim();
+      if (!password) return;
 
-            await this.captureCredentials(captureData);
-          }
+      // Find username/email field
+      const allInputs = document.querySelectorAll('input[type="text"], input[type="email"], input[name*="user" i], input[name*="email" i], input[id*="user" i], input[id*="email" i]');
+      let username = '';
+      for (const input of allInputs) {
+        if (input.value.trim() && input.type !== 'password') {
+          username = input.value.trim();
+          break;
         }
-      } catch (error) {
-        console.error('Error handling Enter key:', error);
       }
-    }, 1000);
+
+      if (!username) return;
+
+      const captureData = {
+        username,
+        password,
+        email: username.includes('@') ? username : '',
+        title: this.generateTitle(window.location.hostname, username),
+        url: window.location.href,
+        domain: window.location.hostname,
+        favicon: this.getFavicon(),
+        captureType: 'enter_key',
+        timestamp: Date.now(),
+        isRegistration: this.isRegistrationContext()
+      };
+
+      // Fire-and-forget: send to background before page navigates
+      chrome.runtime.sendMessage({
+        type: 'CREDENTIALS_CAPTURED',
+        data: captureData,
+        showOnNextPage: true
+      }).catch(() => {});
+
+      console.log('🔐 Credentials captured on Enter key:', captureData.domain);
+    } catch (error) {
+      console.error('Error handling Enter key:', error);
+    }
   }
 
   // Handle navigation changes in SPAs
@@ -359,10 +444,13 @@ class AutoCaptureService {
         isRegistration: captureData.isRegistration
       });
 
-      // Show notification asking user if they want to save
-      const settings = await this.getSettings();
-      if (settings.autoCaptureNotifications !== false) {
-        this.showCaptureNotification(captureData);
+      // Only show notification on actual form submissions, not on input changes
+      const isSubmissionCapture = ['form_submission', 'button_click', 'enter_key', 'registration', 'formless_registration'].includes(captureData.captureType);
+      if (isSubmissionCapture) {
+        const settings = await this.getSettings();
+        if (settings.autoCaptureNotifications !== false) {
+          this.showCaptureNotification(captureData);
+        }
       }
 
       // Store in temporary capture queue (for history/analytics)
@@ -611,6 +699,7 @@ class AutoCaptureService {
         chrome.runtime.sendMessage({
           action: 'addPassword',
           password: {
+            name: captureData.title,
             title: captureData.title,
             siteName: captureData.title,
             username: captureData.username,

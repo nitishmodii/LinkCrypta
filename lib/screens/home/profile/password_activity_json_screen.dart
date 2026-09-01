@@ -270,7 +270,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
           if (jsonLog['oldValue'] != null) {
             try {
               jsonLog['oldValue'] =
-                  EncryptionService.decrypt(jsonLog['oldValue']);
+                  EncryptionService.decryptString(jsonLog['oldValue']);
             } catch (e) {
               jsonLog['oldValue'] = "[Encrypted: ${jsonLog['oldValue']}]";
             }
@@ -279,7 +279,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
           if (jsonLog['newValue'] != null) {
             try {
               jsonLog['newValue'] =
-                  EncryptionService.decrypt(jsonLog['newValue']);
+                  EncryptionService.decryptString(jsonLog['newValue']);
             } catch (e) {
               jsonLog['newValue'] = "[Encrypted: ${jsonLog['newValue']}]";
             }
@@ -370,7 +370,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
 
       if (jsonLog['oldValue'] != null) {
         try {
-          jsonLog['oldValue'] = EncryptionService.decrypt(jsonLog['oldValue']);
+          jsonLog['oldValue'] = EncryptionService.decryptString(jsonLog['oldValue']);
         } catch (e) {
           jsonLog['oldValue'] = "[Encrypted: ${jsonLog['oldValue']}]";
         }
@@ -378,7 +378,7 @@ class _PasswordActivityJsonScreenState extends State<PasswordActivityJsonScreen>
 
       if (jsonLog['newValue'] != null) {
         try {
-          jsonLog['newValue'] = EncryptionService.decrypt(jsonLog['newValue']);
+          jsonLog['newValue'] = EncryptionService.decryptString(jsonLog['newValue']);
         } catch (e) {
           jsonLog['newValue'] = "[Encrypted: ${jsonLog['newValue']}]";
         }

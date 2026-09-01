@@ -12,10 +12,12 @@ import 'services/storage_service.dart';
 import 'services/sync_service.dart';
 import 'services/activity_log_service.dart';
 import 'services/autofill_framework_service.dart';
+import 'services/browser_extension_service.dart';
 import 'screens/home/home_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/onboarding/onboarding_screen.dart';
 import 'screens/auth/login_screen.dart';
+import 'screens/auth/master_password_screen.dart';
 import 'screens/home/profile/privacy_policy_screen.dart';
 import 'screens/home/profile/terms_of_service_screen.dart';
 import 'screens/home/profile/about_screen.dart';
@@ -38,10 +40,14 @@ void main() async {
     
     // Initialize services
     await GoogleSignInService.initialize();
-    await EncryptionService.initialize();
     await StorageService.initialize();
     await SyncService.initialize();
     await ActivityLogService.initialize();
+    
+    // Auto-start Browser Extension server
+    BrowserExtensionService().startServer().catchError((e) {
+      print('Browser extension service auto-start failed: $e');
+    });
     
     runApp(const LinkCryptaApp());
   } catch (e) {
@@ -170,6 +176,7 @@ class _LinkCryptaAppState extends State<LinkCryptaApp> with WidgetsBindingObserv
           '/': (context) => const SplashScreen(),
           '/onboarding': (context) => const OnboardingScreen(),
           '/login': (context) => const LoginScreen(),
+          '/master-password': (context) => const MasterPasswordScreen(),
           '/home': (context) => const HomeScreen(),
           '/privacy-policy': (context) => const PrivacyPolicyScreen(),
           '/terms-of-service': (context) => const TermsOfServiceScreen(),

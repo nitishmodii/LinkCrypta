@@ -11,6 +11,7 @@ class GoogleSignInService {
       
       // Configure Google Sign-In with your Firebase project's web client ID
       _googleSignIn = GoogleSignIn(
+        serverClientId: '795878816417-a5jab510h6c0nolcpcsvumt3nljao4bb.apps.googleusercontent.com',
         scopes: [
           'email',
           'profile',

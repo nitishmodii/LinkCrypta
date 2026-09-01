@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../services/onboarding_service.dart';
+import '../services/encryption_service.dart';
 import '../utils/responsive.dart';
 
 /// Modern Gradient + Glass UI Colors
@@ -69,8 +70,14 @@ class _SplashScreenState extends State<SplashScreen>
     final user = FirebaseAuth.instance.currentUser;
     
     if (user != null) {
-      // User is signed in, go to home
-      Navigator.of(context).pushReplacementNamed('/home');
+      // User is signed in, check if they have unlocked the vault
+      final hasKey = await EncryptionService.hasCachedKey();
+      if (hasKey) {
+        await EncryptionService.initializeFromCache();
+        Navigator.of(context).pushReplacementNamed('/home');
+      } else {
+        Navigator.of(context).pushReplacementNamed('/master-password');
+      }
       return;
     }
 

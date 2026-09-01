@@ -5,6 +5,7 @@ import 'dart:convert';
 import '../models/password_entry.dart';
 import '../models/link_entry.dart';
 import 'storage_service.dart';
+import 'encryption_service.dart';
 
 /// Sync service that stores data locally in Hive
 /// Future cloud sync features can be added when Firebase storage is implemented
@@ -234,13 +235,20 @@ class SyncService {
       final firestore = FirebaseFirestore.instance;
       
       
+      // Decrypt the local password to plaintext for the unified E2EE payload
+      final Map<String, dynamic> plaintextJson = password.toJson();
+      plaintextJson['password'] = StorageService.decryptPassword(password.password);
+      
+      // Encrypt full record
+      final encryptedPayload = EncryptionService.encryptRecordSync(plaintextJson);
+      
       // Store password in Firebase under user's collection
       await firestore
           .collection('users')
           .doc(userId)
           .collection('passwords')
           .doc(password.id)
-          .set(password.toJson());
+          .set(encryptedPayload);
       
       return true;
     } catch (e) {
@@ -267,13 +275,17 @@ class SyncService {
       final userId = FirebaseAuth.instance.currentUser!.uid;
       final firestore = FirebaseFirestore.instance;
       
+      // Encrypt full record
+      final Map<String, dynamic> plaintextJson = link.toJson();
+      final encryptedPayload = EncryptionService.encryptRecordSync(plaintextJson);
+      
       // Store link in Firebase under user's collection
       await firestore
           .collection('users')
           .doc(userId)
           .collection('links')
           .doc(link.id)
-          .set(link.toJson());
+          .set(encryptedPayload);
       
       return true;
     } catch (e) {
@@ -299,22 +311,29 @@ class SyncService {
       
       // Sync all passwords
       for (final password in passwords) {
+        final Map<String, dynamic> plaintextJson = password.toJson();
+        plaintextJson['password'] = StorageService.decryptPassword(password.password);
+        final encryptedPayload = EncryptionService.encryptRecordSync(plaintextJson);
+        
         await firestore
             .collection('users')
             .doc(userId)
             .collection('passwords')
             .doc(password.id)
-            .set(password.toJson());
+            .set(encryptedPayload);
       }
       
       // Sync all links
       for (final link in links) {
+        final Map<String, dynamic> plaintextJson = link.toJson();
+        final encryptedPayload = EncryptionService.encryptRecordSync(plaintextJson);
+        
         await firestore
             .collection('users')
             .doc(userId)
             .collection('links')
             .doc(link.id)
-            .set(link.toJson());
+            .set(encryptedPayload);
       }
       
       return true;
@@ -362,13 +381,19 @@ class SyncService {
       // Process Firebase passwords
       for (final doc in passwordsSnapshot.docs) {
         try {
-          final firebasePassword = PasswordEntry.fromJson(doc.data());
+          final encryptedPayload = doc.data();
+          // Skip if it doesn't look like our new encrypted format
+          if (!encryptedPayload.containsKey('c')) continue;
+          
+          final plaintextJson = EncryptionService.decryptRecordSync(encryptedPayload);
+          final firebasePassword = PasswordEntry.fromJson(plaintextJson);
           
           // Check if password already exists locally
           final exists = localPasswords.any((local) => local.id == firebasePassword.id);
           
           if (!exists) {
             await StorageService.addPassword(
+              id: firebasePassword.id,
               name: firebasePassword.name,
               username: firebasePassword.username,
               password: firebasePassword.password,
@@ -378,19 +403,25 @@ class SyncService {
             );
           }
         } catch (e) {
+          print('Failed to decrypt and sync password from Firebase: $e');
         }
       }
       
       // Process Firebase links
       for (final doc in linksSnapshot.docs) {
         try {
-          final firebaseLink = LinkEntry.fromJson(doc.data());
+          final encryptedPayload = doc.data();
+          if (!encryptedPayload.containsKey('c')) continue; // Skip non-encrypted legacy records
+          
+          final plaintextJson = EncryptionService.decryptRecordSync(encryptedPayload);
+          final firebaseLink = LinkEntry.fromJson(plaintextJson);
           
           // Check if link already exists locally
           final exists = localLinks.any((local) => local.id == firebaseLink.id);
           
           if (!exists) {
             await StorageService.addLink(
+              id: firebaseLink.id,
               title: firebaseLink.title,
               description: firebaseLink.description,
               url: firebaseLink.url,
@@ -398,6 +429,7 @@ class SyncService {
             );
           }
         } catch (e) {
+          print('Failed to decrypt and sync link from Firebase: $e');
         }
       }
       
@@ -456,10 +488,11 @@ class SyncService {
       if (currentUser != null) {
         try {
           final firestore = FirebaseFirestore.instance;
+          final encryptedBackup = EncryptionService.encryptRecordSync(backupData);
           await firestore
               .collection('user_backups')
               .doc(currentUser.uid)
-              .set(backupData);
+              .set(encryptedBackup);
           
           print('SyncService: Data backed up to cloud for user $userEmail');
         } catch (e) {
@@ -590,7 +623,12 @@ class SyncService {
               .get();
           
           if (cloudBackup.exists && cloudBackup.data() != null) {
-            backupData = cloudBackup.data();
+            final encryptedData = cloudBackup.data()!;
+            if (encryptedData.containsKey('c')) {
+              backupData = EncryptionService.decryptRecordSync(encryptedData);
+            } else {
+              backupData = encryptedData; // Fallback for legacy plaintext backups
+            }
             restoredFrom = 'cloud';
             print('SyncService: Restoring from cloud backup');
           }
@@ -722,10 +760,11 @@ class SyncService {
       };
 
       final firestore = FirebaseFirestore.instance;
+      final encryptedSyncData = EncryptionService.encryptRecordSync(syncData);
       await firestore
           .collection('user_backups')
           .doc(currentUser.uid)
-          .set(syncData);
+          .set(encryptedSyncData);
 
       print('SyncService: Successfully synced ${passwords.length} passwords and ${links.length} links to cloud');
       return true;
@@ -755,7 +794,8 @@ class SyncService {
         return true;
       }
 
-      final cloudData = cloudBackup.data()!;
+      final rawData = cloudBackup.data()!;
+      final cloudData = rawData.containsKey('c') ? EncryptionService.decryptRecordSync(rawData) : rawData;
       final localPasswords = await getAllPasswords();
       final localLinks = await getAllLinks();
 
@@ -775,6 +815,7 @@ class SyncService {
         
         if (!exists) {
           await StorageService.addPassword(
+            id: cloudPassword.id,
             name: cloudPassword.name,
             username: cloudPassword.username,
             password: cloudPassword.password,
@@ -792,6 +833,7 @@ class SyncService {
         
         if (!exists) {
           await StorageService.addLink(
+            id: cloudLink.id,
             title: cloudLink.title,
             description: cloudLink.description,
             url: cloudLink.url,

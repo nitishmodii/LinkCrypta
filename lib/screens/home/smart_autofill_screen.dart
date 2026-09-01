@@ -392,7 +392,7 @@ class _SmartAutoFillScreenState extends State<SmartAutoFillScreen> with SingleTi
   }
 
   void _copyCredentials(PasswordEntry entry) async {
-    final decryptedPassword = EncryptionService.decrypt(entry.password);
+    final decryptedPassword = EncryptionService.decryptString(entry.password);
     await Clipboard.setData(ClipboardData(text: '${entry.username}\n$decryptedPassword'));
     
     ScaffoldMessenger.of(context).showSnackBar(

@@ -3,11 +3,17 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/password_entry.dart';
 import '../services/encryption_service.dart';
 import '../services/activity_log_service.dart';
+import '../services/sync_service.dart';
 
 class BrowserExtensionService {
+  static final BrowserExtensionService _instance = BrowserExtensionService._internal();
+  factory BrowserExtensionService() => _instance;
+  BrowserExtensionService._internal();
+
   static const int _defaultPort = 8080;
   static const String _syncEndpoint = '/api/extension-sync';
   static const String _statusEndpoint = '/api/status';
@@ -280,7 +286,7 @@ class BrowserExtensionService {
       );
 
       // Encrypt password and save
-      final encryptedPassword = EncryptionService.encrypt(passwordEntry.password);
+      final encryptedPassword = EncryptionService.encryptString(passwordEntry.password);
       final entryToSave = passwordEntry.copyWith(password: encryptedPassword);
       
       final box = await Hive.openBox<PasswordEntry>('passwords');
@@ -288,6 +294,16 @@ class BrowserExtensionService {
       
       // Log activity
       await ActivityLogService.logPasswordCreated(passwordEntry);
+
+      // Also push to Firestore so the extension can sync
+      if (FirebaseAuth.instance.currentUser != null) {
+        try {
+          await SyncService.syncPasswordToFirebase(passwordEntry);
+          debugPrint('☁️ PUSHED TO FIRESTORE: ${data['domain']}');
+        } catch (e) {
+          debugPrint('⚠️ Firestore push failed (will sync later): $e');
+        }
+      }
 
       debugPrint('💾 SAVED NEW PASSWORD FOR: ${data['domain']} from browser extension');
       debugPrint('📝 PASSWORD ENTRY ID: ${passwordEntry.id}');
@@ -308,7 +324,7 @@ class BrowserExtensionService {
         final encryptedEntry = box.getAt(i);
         if (encryptedEntry == null) continue;
         
-        final decryptedPassword = EncryptionService.decrypt(encryptedEntry.password);
+        final decryptedPassword = EncryptionService.decryptString(encryptedEntry.password);
         final entry = encryptedEntry.copyWith(password: decryptedPassword);
         
         // Check if domain matches (handle subdomains)
@@ -344,7 +360,7 @@ class BrowserExtensionService {
         updatedAt: DateTime.now(),
       );
 
-      final encryptedPassword = EncryptionService.encrypt(updatedEntry.password);
+      final encryptedPassword = EncryptionService.encryptString(updatedEntry.password);
       final encryptedEntry = updatedEntry.copyWith(password: encryptedPassword);
       
       final box = await Hive.openBox<PasswordEntry>('passwords');

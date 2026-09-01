@@ -78,6 +78,7 @@ dependencies:
   firebase_auth: ^5.7.0
   cloud_firestore: ^5.4.4
   google_sign_in: ^6.1.5
+  cryptography: ^2.9.0
   
 
 

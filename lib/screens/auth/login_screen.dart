@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/firebase_auth_service.dart';
+import '../../services/sync_service.dart';
+import '../../services/encryption_service.dart';
 import '../../widgets/data_restore_dialog.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -21,8 +23,14 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Future<void> _checkExistingAuth() async {
     if (FirebaseAuth.instance.currentUser != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pushReplacementNamed('/home');
+      final hasKey = await EncryptionService.hasCachedKey();
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        if (hasKey) {
+          await EncryptionService.initializeFromCache();
+          Navigator.of(context).pushReplacementNamed('/home');
+        } else {
+          Navigator.of(context).pushReplacementNamed('/master-password');
+        }
       });
     }
   }
@@ -90,9 +98,23 @@ class _LoginScreenState extends State<LoginScreen> {
           }
         }
         
-        // Navigate to home in all cases
+        // Navigate to home in all cases — but first do a bidirectional sync
         if (mounted) {
-          Navigator.of(context).pushReplacementNamed('/home');
+          // Sync passwords between app and extension via Firestore
+          final hasKey = await EncryptionService.hasCachedKey();
+          if (hasKey) {
+            await EncryptionService.initializeFromCache();
+            try {
+              await SyncService.syncFromFirebase();
+              await SyncService.syncAllToFirebase();
+              debugPrint('✅ Post-login bidirectional sync complete');
+            } catch (e) {
+              debugPrint('⚠️ Post-login sync failed (non-critical): $e');
+            }
+            Navigator.of(context).pushReplacementNamed('/home');
+          } else {
+            Navigator.of(context).pushReplacementNamed('/master-password');
+          }
         }
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

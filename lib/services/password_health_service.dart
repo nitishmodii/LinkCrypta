@@ -63,7 +63,7 @@ class PasswordHealthService {
     // Decrypt and group passwords for duplicate detection
     for (final entry in entries) {
       try {
-        final decryptedPassword = EncryptionService.decrypt(entry.password);
+        final decryptedPassword = EncryptionService.decryptString(entry.password);
         if (passwordGroups.containsKey(decryptedPassword)) {
           passwordGroups[decryptedPassword]!.add(entry);
         } else {
@@ -78,7 +78,7 @@ class PasswordHealthService {
     // Analyze each password
     for (final entry in entries) {
       try {
-        final decryptedPassword = EncryptionService.decrypt(entry.password);
+        final decryptedPassword = EncryptionService.decryptString(entry.password);
         final analysis = await _analyzePassword(entry, decryptedPassword, passwordGroups);
         analyses.add(analysis);
       } catch (e) {

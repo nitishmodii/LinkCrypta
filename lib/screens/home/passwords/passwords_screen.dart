@@ -64,19 +64,22 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
   }
 
   Future<void> _refreshData() async {
-  try {
-    final dataProvider = context.read<DataProvider>();
-    await dataProvider.loadData();
-  } catch (e) {
-    if (mounted) {
-      AppHelpers.showSnackBar(
-        context,
-        'Failed to refresh data',
-        backgroundColor: ModernColors.error,
-      );
+    try {
+      final dataProvider = context.read<DataProvider>();
+      // First sync from cloud
+      await dataProvider.syncFromFirebase();
+      // Then reload local data
+      await dataProvider.loadData();
+    } catch (e) {
+      if (mounted) {
+        AppHelpers.showSnackBar(
+          context,
+          'Failed to refresh data: ${e.toString()}',
+          backgroundColor: ModernColors.error,
+        );
+      }
     }
   }
-}
 
 
   @override

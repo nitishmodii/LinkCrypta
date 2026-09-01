@@ -50,7 +50,7 @@ class AutofillFrameworkService {
         'username': entry.username,
         // IMPORTANT: send decrypted password to Android AutofillService
         // so it can fill the actual password value.
-        'password': EncryptionService.decrypt(entry.password),
+        'password': EncryptionService.decryptString(entry.password),
         'url': entry.url,
         'notes': entry.notes,
         'category': entry.category,
@@ -108,7 +108,7 @@ class AutofillFrameworkService {
           'id': match.entry.id,
           'name': match.entry.name,
           'username': match.entry.username,
-          'password': EncryptionService.decrypt(match.entry.password),
+          'password': EncryptionService.decryptString(match.entry.password),
           'url': match.entry.url,
           'confidence': match.confidence.name,
           'score': match.score,
@@ -143,11 +143,11 @@ class AutofillFrameworkService {
 
       if (existingMatch != null) {
         // Update existing entry if password changed
-        final decryptedPassword = EncryptionService.decrypt(existingMatch.entry.password);
+        final decryptedPassword = EncryptionService.decryptString(existingMatch.entry.password);
         if (decryptedPassword != password) {
           print('AutofillFramework: Updating existing password for $username');
           final updatedEntry = existingMatch.entry.copyWith(
-            password: EncryptionService.encrypt(password),
+            password: EncryptionService.encryptString(password),
             updatedAt: DateTime.now(),
           );
           await dataProvider.updatePassword(updatedEntry);

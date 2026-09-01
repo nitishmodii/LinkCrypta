@@ -111,6 +111,7 @@ class FirebaseAuthService {
 
   // Clear user data from storage
   static Future<void> _clearUserData() async {
+    await SyncService.clearAllData();
     await _storage.delete(key: _userSignedInKey);
     await _storage.delete(key: _userEmailKey);
     await _storage.delete(key: _userNameKey);
