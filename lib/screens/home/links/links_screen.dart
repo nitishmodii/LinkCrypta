@@ -97,10 +97,6 @@ class _LinksScreenState extends State<LinksScreen> {
               });
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: _navigateToAddLink,
-          ),
         ],
       ),
       body: ResponsiveLayout(
@@ -216,30 +212,6 @@ class _LinksScreenState extends State<LinksScreen> {
               ),
             ),
           ],
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: ResponsiveBreakpoints.isDesktop(context) ? 24 : 16, 
-          right: ResponsiveBreakpoints.isDesktop(context) ? 16 : 8,
-        ),
-        child: FloatingActionButton.extended(
-          backgroundColor: ModernColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          onPressed: _navigateToAddLink,
-          icon: const Icon(Icons.add, size: 24),
-          label: Text(
-            'Add Link',
-            style: TextStyle(
-              fontWeight: FontWeight.w600, 
-              letterSpacing: 0.5,
-              fontSize: ResponsiveBreakpoints.responsiveFontSize(context, mobile: 14, desktop: 16),
-            ),
-          ),
         ),
       ),
     );
@@ -425,44 +397,6 @@ class _LinksScreenState extends State<LinksScreen> {
                 tablet: 44,
                 desktop: 48,
               )),
-              if (noLinks)
-                ElevatedButton.icon(
-                  onPressed: _navigateToAddLink,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Your First Link'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ModernColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveBreakpoints.responsive<double>(
-                        context,
-                        mobile: 24,
-                        tablet: 28,
-                        desktop: 32,
-                      ),
-                      vertical: ResponsiveBreakpoints.responsive<double>(
-                        context,
-                        mobile: 16,
-                        tablet: 18,
-                        desktop: 20,
-                      ),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    textStyle: TextStyle(
-                      fontSize: ResponsiveBreakpoints.responsiveFontSize(
-                        context,
-                        mobile: 16,
-                        tablet: 18,
-                        desktop: 20,
-                      ),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

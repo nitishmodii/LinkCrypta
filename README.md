@@ -1,316 +1,121 @@
-# LinkCrypta ��🔐
+# 🔐 LinkCrypta - Secure Password & Link Manager
 
-A secure, feature-rich password and link management application built with Flutter. LinkCrypta provides enterprise-grade security with an intuitive user interface, making password and link management effortless and secure.
+LinkCrypta is a comprehensive, end-to-end encrypted password and bookmark management ecosystem. It seamlessly integrates a powerful Flutter-based mobile application with a smart Chrome browser extension, ensuring that your credentials and secure links are safe, synced, and effortlessly accessible across all your devices.
 
-## ✨ Features
+LinkCrypta employs a strict **Zero-Knowledge Architecture**. Your data is encrypted locally on your device using a key derived from your Master Password before being synced to the cloud. The server never sees your plaintext data.
 
-### 🔒 Core Security
-- **End-to-End Encryption**: All data encrypted using AES-256 encryption
-- **Firebase Authentication**: Secure user authentication with Google Sign-In
-- **Biometric Authentication**: Fingerprint and face recognition support
-- **Secure Storage**: Local storage using Hive with encryption
-- **Master Password Protection**: Single master password for all your data
-- **Auto-lock**: Automatic app locking after inactivity
+---
 
-### 📊 Password Health Dashboard
-- **Password Strength Analysis**: Real-time strength scoring and recommendations
-- **Duplicate Detection**: Identify and manage duplicate passwords
-- **Compromised Password Checking**: Integration with HaveIBeenPwned API
-- **Security Insights**: Interactive charts and security metrics
-- **Health Score**: Overall password security rating
+## 🌟 Key Features
 
-### 🎲 Advanced Password Generator
-- **Multiple Generation Types**:
-  - Random passwords with customizable complexity
-  - Pronounceable passwords for easy memorization
-  - Passphrase generation with word combinations
-  - Custom pattern-based generation
-- **Real-time Strength Analysis**: Instant feedback on password strength
-- **Entropy Calculation**: Mathematical strength measurement
-- **Bulk Generation**: Generate multiple passwords at once
-- **Customizable Options**: Length, character sets, exclusions
+### 📱 Mobile App (Flutter / Android / iOS)
 
-### 🌐 Smart Auto-Fill & Browser Integration
-- **URL Matching**: Intelligent website matching with confidence scoring
-- **Form Field Detection**: Automatic categorization of login forms
-- **Auto-fill Suggestions**: Smart suggestions based on context
-- **Clipboard Integration**: Secure copy-paste functionality
-- **Subdomain Support**: Matches related domains automatically
+#### **Core Vault & Security**
+*   **Military-Grade Encryption:** Uses PBKDF2 for robust key derivation and AES-256-GCM for authenticated encryption of your vault.
+*   **Zero-Knowledge Sync:** Your Master Password never leaves your device. Data stored in Firebase Firestore is fully encrypted (`{"v": 1, "n": "nonce", "c": "ciphertext"}`).
+*   **Offline-First Architecture:** Built on top of Hive database, ensuring you have instant access to your vault even without an internet connection.
+*   **Strict Biometric Authentication (View/Copy):** The app enforces strict security constraints. You **must** authenticate via Biometrics (Fingerprint / FaceID) or Device PIN every single time you attempt to view or copy a username or password.
+*   **Vault Timeout & Auto-Lock:** Secure session management ensures your vault locks itself after a period of inactivity.
 
-### 📈 Data Analytics & Insights
-- **Usage Patterns**: Track password usage and access patterns
-- **Security Trends**: Monitor security improvements over time
-- **Activity Timeline**: Detailed log of all password activities
-- **Password Distribution**: Visual breakdown of password strengths
-- **Breach Monitoring**: Alerts for compromised accounts
+#### **Advanced Settings & Dashboards (Profile Tab)**
+The **Profile / Settings Tab** provides a comprehensive control center for power users:
+*   **Password Activity JSON Viewer:** Transparency at its core. View full, detailed logs of all your activities (exactly when a password was viewed, copied, or auto-filled) directly in JSON format.
+*   **Autofill Service Configuration:** Easily manage and enable/disable LinkCrypta as your system-wide autofill provider directly from the app.
+*   **Credential Importer:** Easily import credentials directly from the system autofill service into your secure vault.
+*   **Security Settings:** Manage your PIN, toggle Biometric login requirements, and handle encryption preferences.
+*   **Text Size & Accessibility:** Custom slider to adjust the app's text size for better readability across all screens.
+*   **Advanced Features Hub:** Deep dive into Analytics Dashboards, Password Health analysis (weak, reused), and an Advanced Password Generator (passphrases, length, symbols).
 
-### 🔗 Smart Link Management
-- **Secure Link Storage**: Store and organize important links with encryption
-- **Category Organization**: Organize links by customizable categories
-- **Quick Access**: Fast search and retrieval with intelligent filtering
-- **URL Preview**: Smart link previews and metadata extraction
-- **Responsive Design**: Optimized for mobile, tablet, and desktop
-- **Favorite Links**: Mark important links for quick access
+#### **Smart Autofill Integration**
+*   **Android Autofill Framework:** Deeply integrated with the Android OS. The native `AutofillService` suggests and auto-fills passwords in native apps and mobile browsers automatically.
+*   **Smart AutoFill Matching:** Intelligently matches URLs and app domains to your saved credentials using fuzzy matching, Levenshtein distance, and subdomain analysis.
 
-### 🎨 User Experience
-- **Modern Material Design**: Beautiful, intuitive Material 3 design system
-- **Responsive Layout**: Optimized for mobile, tablet, and desktop devices
-- **Dark/Light Themes**: Customizable appearance with system theme support
-- **Smooth Animations**: Fluid transitions and micro-interactions
-- **Advanced Search**: Powerful search across passwords and links
-- **Export/Import**: Secure data backup and restore functionality
+#### **Organization & Management**
+*   **Secure Link Manager:** Not just for passwords! Save and organize end-to-end encrypted bookmarks and private links.
+*   **Custom Categories:** Organize your credentials into intuitive categories (e.g., General, Work, Social, Finance) with visual filters.
+*   **Favorites System:** Pin your most frequently used passwords and links for instant access.
+*   **Modern UI/UX:** A beautifully crafted, responsive interface with smooth staggered animations, glassmorphism elements, and full Dark/Light mode support.
+
+---
+
+### 🌐 Browser Extension (Chrome)
+
+#### **Intelligent Automation**
+*   **Auto-Capture Credentials:** Smart `form-detector.js` intelligently detects when you successfully log into or sign up on a website and prompts you to save the new credentials to your vault.
+*   **Smart Auto-Fill:** Automatically detects login forms on web pages and displays an inline suggestion popup to fill saved passwords securely.
+*   **Race-Condition Safe:** Robust event handling and state management (`isFilling` flags) ensure the auto-fill process doesn't conflict with your manual typing or trigger infinite loops.
+
+#### **Vault Access & Sync**
+*   **Direct Cloud Sync:** Communicates directly with Firebase Firestore using the exact same PBKDF2/AES-256-GCM encryption algorithms as the mobile app.
+*   **Quick Access Popup:** A polished extension popup to quickly search your vault, copy usernames/passwords, or generate strong new passwords without leaving your current tab.
+*   **Keyboard Shortcuts:** Press `Ctrl+Shift+L` to open quick search or `Ctrl+Shift+F` to instantly trigger auto-fill on the current page.
+*   **Capture Stats & Syncing:** Track your capture statistics in the extension popup. Credentials captured offline or locally can be manually pushed to the cloud with a dedicated "Sync to App" button.
+
+---
+
+## 🏗️ Architecture & Cryptography
+
+Security is at the absolute heart of LinkCrypta. Here is how your data is protected:
+
+1.  **Key Derivation (PBKDF2):** Your Master Password is run through the PBKDF2 algorithm with a unique salt and high iteration count to generate a strong 256-bit symmetric encryption key.
+2.  **Encryption (AES-256-GCM):** All sensitive data (passwords, usernames, notes, URLs) is encrypted using AES-GCM, which provides both confidentiality and data authenticity (preventing tampering).
+3.  **The Payload:** Data stored in Firebase is completely opaque. It looks like this: `{"v": 1, "n": "base64_nonce", "c": "base64_ciphertext"}`.
+4.  **Local Caching:** Credentials are kept in Android `SharedPreferences` (for native autofill) and Hive (for the app) only in their encrypted state. They are decrypted strictly at runtime in memory when needed.
+
+---
 
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Flutter SDK (>=3.8.1)
-- Dart SDK
-- Android Studio / VS Code
-- Git
+*   Flutter SDK (for the mobile app)
+*   Google Chrome (for the browser extension)
+*   Firebase Project (for Firestore Sync and Authentication)
 
-### Installation
+### 1. Running the Mobile App
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/nitishmodii/LinkCrypta.git
+    ```
+2.  Navigate to the project root and install dependencies:
+    ```bash
+    flutter pub get
+    ```
+3.  Set up Firebase:
+    *   Add your `google-services.json` to `android/app/`.
+    *   Add your `GoogleService-Info.plist` to `ios/Runner/`.
+    *   Configure `lib/firebase_options.dart`.
+4.  Connect your device or emulator and run:
+    ```bash
+    flutter run
+    ```
+5.  *To use Mobile Autofill:* Go to Android Settings -> System -> Passwords & Autofill -> Autofill Service -> Select **LinkCrypta**.
 
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/technitishmodi/vaultmate.git
-   cd vaultmate
-   ```
-
-2. **Install dependencies**
-   ```bash
-   flutter pub get
-   ```
-
-3. **Generate model files**
-   ```bash
-   flutter packages pub run build_runner build
-   ```
-
-4. **Run the app**
-   ```bash
-   flutter run
-   ```
-
-### Platform Setup
-
-#### Android
-- Minimum SDK: 21
-- Target SDK: 34
-- Permissions: Biometric, Internet (for breach checking)
-
-#### iOS
-- iOS 12.0+
-- Biometric permissions configured
-- Network permissions for API calls
-
-#### Windows/Linux/macOS
-- Desktop support enabled
-- Local authentication configured
-
-## 🏗️ Architecture
-
-### Project Structure
-```
-lib/
-├── models/           # Data models (Hive entities, Password/Link entries)
-├── providers/        # State management (Provider pattern)
-│   ├── data_provider.dart      # Main app state and data
-│   └── theme_provider.dart     # Theme and appearance settings
-├── screens/          # UI screens and pages
-│   ├── auth/        # Authentication screens (login, signup)
-│   ├── home/        # Main app screens
-│   │   ├── passwords/   # Password management screens
-│   │   ├── links/       # Link management screens
-│   │   ├── favorites/   # Favorites screen
-│   │   └── profile/     # User profile and settings
-│   ├── onboarding/  # First-time user experience
-│   └── splash_screen.dart # App launch screen
-├── services/         # Business logic and APIs
-│   ├── advanced_password_generator.dart
-│   ├── auth_service.dart
-│   ├── password_health_service.dart
-│   └── smart_autofill_service.dart
-├── utils/           # Utilities, constants, and helpers
-│   ├── responsive.dart     # Responsive design utilities
-│   ├── constants.dart      # App constants
-│   └── helpers.dart        # Utility functions
-└── widgets/         # Reusable UI components
-    ├── password_card.dart
-    ├── link_card.dart
-    └── custom_widgets.dart
-```
-
-### Key Services
-- **AuthService**: Firebase authentication and biometric login
-- **AdvancedPasswordGenerator**: Multi-type password generation algorithms
-- **PasswordHealthService**: Password analysis and security scoring
-- **SmartAutofillService**: Intelligent form filling functionality
-- **AnalyticsService**: Usage analytics and security insights
-- **DataProvider**: Main app state management and data persistence
-
-### State Management
-- **Provider Pattern**: Reactive state management
-- **DataProvider**: Main app state and data
-- **ThemeProvider**: Theme and appearance settings
-
-## 🔧 Configuration
-
-### Environment Setup
-Create a `.env` file in the root directory:
-```env
-HAVEIBEENPWNED_API_KEY=your_api_key_here
-ENCRYPTION_KEY=your_encryption_key
-```
-
-### Firebase Setup
-LinkCrypta uses Firebase for authentication and cloud storage:
-1. Create a Firebase project at [Firebase Console](https://console.firebase.google.com/)
-2. Add your `google-services.json` (Android) and `GoogleService-Info.plist` (iOS)
-3. Enable Authentication with Google Sign-In
-4. Enable Firestore Database for cloud storage
-5. Configure authentication settings in the Firebase console
-
-## 📱 Usage
-
-### First Time Setup
-1. **Splash Screen**: LinkCrypta welcome screen
-2. **Authentication**: Sign in with Google or create account
-3. **Biometric Setup**: Enable fingerprint/face recognition (optional)
-4. **Tutorial**: Interactive guide through main features
-
-### Adding Passwords
-1. Navigate to the Passwords tab
-2. Tap the "+" button to add new password
-3. Enter website, username, and password details
-4. Use the advanced generator for strong passwords
-5. Categorize and add notes as needed
-6. Save securely to encrypted storage
-
-### Managing Links
-1. Go to the Links tab
-2. Add new links with URL and description
-3. Organize by custom categories
-4. Use quick search to find links
-5. Mark favorites for easy access
-
-### Using Advanced Features
-- **Health Dashboard**: Monitor password security from the analytics tab
-- **Advanced Password Generator**: Access 4 generation types (Random, Pronounceable, Passphrase, Pattern)
-- **Smart Auto-fill**: Enable in settings for seamless form filling
-- **Responsive Design**: Works perfectly on mobile, tablet, and desktop
-- **Categories**: Organize passwords and links with custom categories
-
-## 🛡️ Security
-
-### Encryption
-- **Algorithm**: AES-256-GCM encryption
-- **Key Derivation**: PBKDF2 with salt
-- **Storage**: Encrypted Hive boxes
-- **Memory**: Secure memory handling
-
-### Authentication
-- **Firebase Auth**: Secure Google Sign-In integration
-- **Biometric**: Platform-native biometric APIs (fingerprint, face ID)
-- **Session Management**: Automatic timeout and re-authentication
-- **Secure Token Handling**: JWT tokens with automatic refresh
-
-### Privacy
-- **Local Storage**: All data stored locally by default
-- **No Tracking**: No user analytics or tracking
-- **Open Source**: Transparent security implementation
-
-## 🧪 Testing
-
-Run tests with:
-```bash
-flutter test
-```
-
-For integration tests:
-```bash
-flutter drive --target=test_driver/app.dart
-```
-
-## 📦 Dependencies
-
-### Core Dependencies
-- `flutter`: UI framework
-- `hive`: Local database with encryption
-- `encrypt`: Encryption library for data security
-- `local_auth`: Biometric authentication
-- `provider`: State management
-- `firebase_core`: Firebase integration
-- `firebase_auth`: Authentication services
-- `cloud_firestore`: Cloud database
-- `google_sign_in`: Google authentication
-
-### UI Dependencies
-- `fl_chart`: Charts and analytics visualization
-- `google_fonts`: Typography and custom fonts
-- `lottie`: Smooth animations and micro-interactions
-- `shimmer`: Loading effects and placeholders
-- `flutter_staggered_animations`: List animations
-- `smooth_page_indicator`: Page indicators
-
-### Utility Dependencies
-- `http`: API requests and network calls
-- `url_launcher`: External link handling
-- `qr_flutter`: QR code generation for sharing
-- `clipboard`: Secure clipboard operations
-- `file_picker`: File selection and import
-- `permission_handler`: Device permissions
-- `flutter_secure_storage`: Secure local storage
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request to the main repository
-
-### Development Guidelines
-- Follow Flutter/Dart style guidelines
-- Add tests for new features
-- Update documentation
-- Ensure security best practices
-
-## 📄 License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-### Getting Help
-- 📧 Email: support@linkcrypta.app
-- 🐛 Issues: [GitHub Issues](https://github.com/technitishmodi/vaultmate/issues)
-- 📖 Documentation: [Wiki](https://github.com/technitishmodi/vaultmate/wiki)
-- 💬 Discussions: [GitHub Discussions](https://github.com/technitishmodi/vaultmate/discussions)
-
-## 🚧 Roadmap
-
-### Upcoming Features
-- [ ] Cloud synchronization
-- [ ] Team sharing capabilities
-- [ ] Browser extensions
-- [ ] Two-factor authentication
-- [ ] Secure notes
-- [ ] Password sharing
-- [ ] Advanced breach monitoring
-
-### Version History
-- **v1.0.0**: Initial release with core password and link management
-- **v1.0.1**: Advanced password generator with 4 generation types
-- **v1.0.2**: Responsive design for mobile, tablet, and desktop
-- **v1.0.3**: Firebase integration and Google authentication
-- **v1.0.4**: Enhanced UI with Material 3 design system
-
-## 🙏 Acknowledgments
-
-- Flutter team for the amazing framework
-- Hive team for local storage solution
-- HaveIBeenPwned for breach detection API
-- Material Design for UI guidelines
-- Open source community for inspiration
+### 2. Installing the Browser Extension
+1.  Open Google Chrome and navigate to `chrome://extensions/`.
+2.  Enable **Developer mode** in the top right corner.
+3.  Click **Load unpacked** and select the `browser_extension` folder from this repository.
+4.  Pin the LinkCrypta extension to your toolbar.
+5.  Log in with your Google account and enter your Master Password to sync your vault.
 
 ---
 
-**LinkCrypta** - Secure your digital life with confidence 🔗🔐
+## 🛠️ Tech Stack
+
+*   **Frontend Mobile:** Flutter, Dart, Provider (State Management)
+*   **Frontend Extension:** Vanilla JavaScript, HTML5, CSS3, Chrome Extensions API (Manifest V3)
+*   **Backend & Auth:** Firebase Firestore, Firebase Authentication, Google OAuth
+*   **Local Storage:** Hive (Flutter), SharedPreferences (Android Native), `chrome.storage.local` (Extension)
+*   **Native Integration:** Kotlin (Android AutofillService API, MethodChannels)
+*   **Cryptography:** `pointycastle` (Dart), Web Crypto API (JavaScript)
+
+---
+
+## 🛡️ Privacy & Data Handling
+LinkCrypta is designed so that you are the sole owner of your data.
+*   **No Tracking:** No telemetry or tracking scripts are included.
+*   **Encrypted Transit & Rest:** Passwords never leave the device in plaintext format.
+*   **Zero-Knowledge:** We do not have access to your Master Password and cannot recover it or your data if lost.
+
+---
+
+*Built with ❤️ for secure and seamless password management.*

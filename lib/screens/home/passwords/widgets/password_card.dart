@@ -22,19 +22,15 @@ class PasswordCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.only(
-        bottom: ResponsiveBreakpoints.responsive<double>(
-          context,
-          mobile: AppConstants.spacingS,
-          tablet: AppConstants.spacingM,
-          desktop: AppConstants.spacingL,
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      color: Theme.of(context).colorScheme.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AppConstants.radiusL),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.2),
+          width: 1,
         ),
-      ),
-      elevation: ResponsiveBreakpoints.responsive<double>(
-        context,
-        mobile: 2,
-        tablet: 3,
-        desktop: 4,
       ),
       child: InkWell(
         onTap: onTap,
@@ -42,9 +38,9 @@ class PasswordCard extends StatelessWidget {
         child: Padding(
           padding: ResponsiveBreakpoints.responsivePadding(
             context,
-            mobile: const EdgeInsets.all(AppConstants.spacingM),
-            tablet: const EdgeInsets.all(AppConstants.spacingL),
-            desktop: const EdgeInsets.all(20),
+            mobile: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+            tablet: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            desktop: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
           ),
           child: ResponsiveBuilder(
             mobile: _buildMobileLayout(context),
@@ -59,17 +55,13 @@ class PasswordCard extends StatelessWidget {
   Widget _buildMobileLayout(BuildContext context) {
     return Row(
       children: [
-        // Icon
-        _buildIcon(context, size: 50),
-        const SizedBox(width: AppConstants.spacingM),
-        
+        _buildIcon(context, size: 36),
+        const SizedBox(width: AppConstants.spacingS),
         // Content
         Expanded(child: _buildContent(context, compact: true)),
         
-        // Actions and Arrow
-        _buildActions(context),
-        const SizedBox(width: 8),
-        _buildArrow(context),
+        // Trailing Actions
+        _buildTrailingActions(context),
       ],
     );
   }
@@ -80,7 +72,7 @@ class PasswordCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            _buildIcon(context, size: 56),
+            _buildIcon(context, size: 44),
             const SizedBox(width: AppConstants.spacingM),
             Expanded(
               child: Column(
@@ -92,7 +84,7 @@ class PasswordCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingM),
@@ -114,7 +106,7 @@ class PasswordCard extends StatelessWidget {
       children: [
         Row(
           children: [
-            _buildIcon(context, size: 64),
+            _buildIcon(context, size: 52),
             const SizedBox(width: AppConstants.spacingL),
             Expanded(
               child: Column(
@@ -126,7 +118,7 @@ class PasswordCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingL),
@@ -142,7 +134,12 @@ class PasswordCard extends StatelessWidget {
     );
   }
 
+
+
   Widget _buildIcon(BuildContext context, {required double size}) {
+    final domain = password.url.isNotEmpty ? AppHelpers.getDomainFromUrl(password.url) : '';
+    final faviconUrl = domain.isNotEmpty ? 'https://www.google.com/s2/favicons?domain=$domain&sz=128' : '';
+
     return Container(
       width: size,
       height: size,
@@ -150,6 +147,19 @@ class PasswordCard extends StatelessWidget {
         color: AppConstants.primaryColor.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(AppConstants.radiusM),
       ),
+      clipBehavior: Clip.antiAlias,
+      child: domain.isNotEmpty
+          ? Image.network(
+              faviconUrl,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) => _buildFallbackIcon(size),
+            )
+          : _buildFallbackIcon(size),
+    );
+  }
+
+  Widget _buildFallbackIcon(double size) {
+    return Center(
       child: Icon(
         AppConstants.iconPassword,
         color: AppConstants.primaryColor,
@@ -163,12 +173,12 @@ class PasswordCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildTitle(context),
-        const SizedBox(height: AppConstants.spacingXS),
+        SizedBox(height: compact ? 2 : AppConstants.spacingXS),
         if (password.username.isNotEmpty && !compact)
           _buildUsername(context),
         if (!compact) const SizedBox(height: AppConstants.spacingXS),
         _buildUrl(context),
-        const SizedBox(height: AppConstants.spacingXS),
+        SizedBox(height: compact ? 2 : AppConstants.spacingXS),
         Row(
           children: [
             _buildCategory(context),
@@ -199,17 +209,6 @@ class PasswordCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (password.isFavorite)
-          Icon(
-            AppConstants.iconFavorite,
-            color: AppConstants.primaryColor,
-            size: ResponsiveBreakpoints.responsive<double>(
-              context,
-              mobile: 16,
-              tablet: 18,
-              desktop: 20,
-            ),
-          ),
       ],
     );
   }
@@ -255,15 +254,15 @@ class PasswordCard extends StatelessWidget {
       padding: EdgeInsets.symmetric(
         horizontal: ResponsiveBreakpoints.responsive<double>(
           context,
-          mobile: AppConstants.spacingS,
-          tablet: 12,
-          desktop: 14,
+          mobile: 6,
+          tablet: 10,
+          desktop: 12,
         ),
         vertical: ResponsiveBreakpoints.responsive<double>(
           context,
-          mobile: AppConstants.spacingXS,
-          tablet: 6,
-          desktop: 8,
+          mobile: 2,
+          tablet: 4,
+          desktop: 6,
         ),
       ),
       decoration: BoxDecoration(
@@ -298,6 +297,30 @@ class PasswordCard extends StatelessWidget {
           desktop: 14,
         ),
       ),
+    );
+  }
+
+  Widget _buildTrailingActions(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            password.isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: password.isFavorite ? AppConstants.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            size: 20,
+          ),
+          onPressed: () => onAction?.call('favorite', password),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          padding: EdgeInsets.zero,
+          splashRadius: 20,
+        ),
+        _buildActions(context),
+        if (ResponsiveBreakpoints.isMobile(context))
+          _buildArrow(context),
+      ],
     );
   }
 
@@ -348,19 +371,6 @@ class PasswordCard extends StatelessWidget {
                   ],
                 ),
               ),
-            PopupMenuItem(
-              value: 'favorite',
-              child: Row(
-                children: [
-                  Icon(
-                    password.isFavorite ? Icons.favorite_border : Icons.favorite,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(password.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'),
-                ],
-              ),
-            ),
             const PopupMenuItem(
               value: 'edit',
               child: Row(

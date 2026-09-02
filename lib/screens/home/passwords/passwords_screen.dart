@@ -222,7 +222,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                       return ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         itemCount: passwords.length,
                         itemBuilder: (context, index) {
                           final password = passwords[index];
@@ -232,7 +232,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                             opacity: 1.0,
                             curve: Curves.easeInOut,
                             child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12, left: 0, right: 0),
+                              padding: const EdgeInsets.only(bottom: 6, left: 0, right: 0),
                               child: PasswordCard(
                                 password: password,
                                 onTap: () => _navigateToPasswordDetail(password),
@@ -250,23 +250,6 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
             ),
           ),
         ],
-      ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16, right: 8),
-        child: FloatingActionButton.extended(
-          backgroundColor: ModernColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          onPressed: _navigateToAddPassword,
-          icon: const Icon(Icons.add, size: 24),
-          label: const Text(
-            'Add Password',
-            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
-          ),
-        ),
       ),
     );
   }
@@ -315,29 +298,6 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              if (noPasswords)
-                ElevatedButton.icon(
-                  onPressed: _navigateToAddPassword,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Your First Password'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ModernColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

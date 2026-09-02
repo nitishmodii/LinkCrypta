@@ -395,65 +395,28 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
                     Expanded(
                       child: _buildActionButton(
                         context,
-                        icon: Icons.person_rounded,
-                        label: 'Copy Username',
-                        color: _colorScheme['primary']!,
-                        onTap: () {
-                          AppHelpers.copyToClipboard(widget.password.username);
-                          AppHelpers.showSnackBar(context, 'Username copied');
+                        icon: _isSyncing ? Icons.sync : Icons.cloud_upload_rounded,
+                        label: _isSyncing ? 'Syncing...' : 'Sync Now',
+                        color: Colors.green.shade600,
+                        onTap: _isSyncing ? null : () async {
+                          await _syncPasswordToFirebase();
                         },
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildActionButton(
-                        context,
-                        icon: Icons.lock_rounded,
-                        label: 'Copy Password',
-                        color: _colorScheme['secondary']!,
-                        onTap: () async {
-                          // Authenticate before copying password
-                          final authenticated = await AuthService.showAuthDialog(
-                            context,
-                            reason: 'Authenticate to copy password',
-                          );
-                          
-                          if (authenticated) {
-                            final dataProvider = context.read<DataProvider>();
-                            final decryptedPassword = dataProvider.getDecryptedPassword(widget.password);
-                            AppHelpers.copyToClipboard(decryptedPassword);
-                            AppHelpers.showSnackBar(context, 'Password copied');
-                            
-                            // Log password view activity (since copying counts as viewing)
-                            dataProvider.logPasswordViewed(widget.password);
-                          }
-                        },
+                    if (widget.password.url.isNotEmpty) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _buildActionButton(
+                          context,
+                          icon: Icons.open_in_browser_rounded,
+                          label: 'Open Website',
+                          color: _colorScheme['accent']!,
+                          onTap: () => AppHelpers.launchUrl(widget.password.url),
+                        ),
                       ),
-                    ),
+                    ],
                   ],
                 ),
-                const SizedBox(height: 12),
-                _buildActionButton(
-                  context,
-                  icon: _isSyncing ? Icons.sync : Icons.cloud_upload_rounded,
-                  label: _isSyncing ? 'Syncing...' : 'Sync Now',
-                  color: Colors.green.shade600,
-                  onTap: _isSyncing ? null : () async {
-                    await _syncPasswordToFirebase();
-                  },
-                  fullWidth: true,
-                ),
-                if (widget.password.url.isNotEmpty) ...[
-                  const SizedBox(height: 12),
-                  _buildActionButton(
-                    context,
-                    icon: Icons.open_in_browser_rounded,
-                    label: 'Open Website',
-                    color: _colorScheme['accent']!,
-                    onTap: () => AppHelpers.launchUrl(widget.password.url),
-                    fullWidth: true,
-                  ),
-                ],
               ]),
             ),
           ),
@@ -536,7 +499,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
         ),
       ),
       subtitle: Text(
-        _obscurePassword ? '••••••••' : widget.password.password,
+        _obscurePassword ? '••••••••' : context.read<DataProvider>().getDecryptedPassword(widget.password),
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       trailing: Row(
@@ -548,10 +511,26 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               size: 20,
             ),
-            onPressed: () {
-              setState(() {
-                _obscurePassword = !_obscurePassword;
-              });
+            onPressed: () async {
+              if (_obscurePassword) {
+                // Authenticate before revealing password
+                final authenticated = await AuthService.showAuthDialog(
+                  context,
+                  reason: 'Authenticate to view password',
+                );
+                
+                if (authenticated) {
+                  setState(() {
+                    _obscurePassword = false;
+                  });
+                  // Log password view activity
+                  context.read<DataProvider>().logPasswordViewed(widget.password);
+                }
+              } else {
+                setState(() {
+                  _obscurePassword = true;
+                });
+              }
             },
             splashRadius: 20,
           ),

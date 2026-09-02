@@ -66,10 +66,8 @@ class LinkCard extends StatelessWidget {
         // Content
         Expanded(child: _buildContent(context, compact: true)),
         
-        // Actions and Arrow
-        _buildActions(context),
-        const SizedBox(width: 8),
-        _buildArrow(context),
+        // Trailing Actions
+        _buildTrailingActions(context),
       ],
     );
   }
@@ -92,7 +90,7 @@ class LinkCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingM),
@@ -126,7 +124,7 @@ class LinkCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingL),
@@ -199,17 +197,6 @@ class LinkCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (link.isFavorite)
-          Icon(
-            AppConstants.iconFavorite,
-            color: AppConstants.primaryColor,
-            size: ResponsiveBreakpoints.responsive<double>(
-              context,
-              mobile: 16,
-              tablet: 18,
-              desktop: 20,
-            ),
-          ),
       ],
     );
   }
@@ -301,6 +288,35 @@ class LinkCard extends StatelessWidget {
     );
   }
 
+  Widget _buildTrailingActions(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            link.isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: link.isFavorite ? AppConstants.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            size: 20,
+          ),
+          onPressed: () => onAction?.call('favorite', link),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          padding: EdgeInsets.zero,
+          splashRadius: 20,
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildActions(context),
+            if (ResponsiveBreakpoints.isMobile(context))
+              _buildArrow(context),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildActions(BuildContext context) {
     return Consumer<DataProvider>(
       builder: (context, dataProvider, child) {
@@ -334,19 +350,6 @@ class LinkCard extends StatelessWidget {
                   Icon(Icons.copy, size: 18),
                   SizedBox(width: 12),
                   Text('Copy URL'),
-                ],
-              ),
-            ),
-            PopupMenuItem(
-              value: 'favorite',
-              child: Row(
-                children: [
-                  Icon(
-                    link.isFavorite ? Icons.favorite_border : Icons.favorite,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(link.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'),
                 ],
               ),
             ),

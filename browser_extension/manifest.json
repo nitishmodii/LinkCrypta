@@ -75,8 +75,7 @@
     {
       "resources": [
         "src/content/injected-script.js",
-        "icons/*",
-        "view_passwords.html"
+        "icons/*"
       ],
       "matches": ["<all_urls>"]
     }
