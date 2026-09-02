@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:linkcrypta/utils/modern_colors.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../../../services/onboarding_service.dart';
@@ -14,16 +15,10 @@ import 'terms_of_service_screen.dart';
 import 'about_screen.dart';
 import 'password_activity_json_screen.dart';
 import 'autofill_service_screen.dart';
+import '../advanced_features_screen.dart';
 
 // Modern Light Blue Color Scheme
-class ModernColors {
-  static const Color primaryBlue = Color(0xFF2196F3);
-  static const Color lightBlue = Color(0xFFE3F2FD);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color lightGrey = Color(0xFFF5F5F5);
-  static const Color textDark = Color(0xFF212121);
-  static const Color textLight = Color(0xFF757575);
-}
+
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -389,6 +384,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const SecuritySettingsScreen(),
+                ),
+              );
+            },
+          ),
+
+          _buildSettingsItem(
+            context,
+            icon: Icons.auto_awesome_rounded,
+            title: 'Advanced Features',
+            subtitle: 'Password generator and health tools',
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const AdvancedFeaturesScreen(),
                 ),
               );
             },

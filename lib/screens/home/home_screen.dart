@@ -10,6 +10,7 @@ import 'favorites/favorites_screen.dart';
 import 'profile/profile_screen.dart';
 import 'passwords/add_password_screen.dart';
 import 'links/widgets/add_edit_link_dialog.dart';
+import 'widgets/custom_bottom_nav_bar.dart';
 import 'dart:ui';
 
 class HomeScreen extends StatefulWidget {
@@ -75,6 +76,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     final isDarkMode = theme.brightness == Brightness.dark;
 
     return Scaffold(
+      extendBody: true,
+      backgroundColor: isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE3F2FD),
       body: Container(
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -117,7 +120,20 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
           ),
         ),
       ),
-      bottomNavigationBar: _buildBottomNavBar(context, isDarkMode),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddOptionsBottomSheet,
+        backgroundColor: const Color(0xFFE8754D), // Terracotta
+        elevation: 6,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+        child: const Icon(Icons.add, color: Color(0xFFF7F1E8), size: 32), // Warm Ivory
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: CustomBottomNavBar(
+        currentIndex: _currentIndex,
+        onTabTapped: _onTabTapped,
+        isDarkMode: isDarkMode,
+        activeColor: _colors['primary']!,
+      ),
     );
   }
 
@@ -338,109 +354,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildBottomNavBar(BuildContext context, bool isDarkMode) {
-    return Container(
-      margin: ResponsiveBreakpoints.responsivePadding(
-        context,
-        mobile: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        tablet: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        desktop: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(
-          ResponsiveBreakpoints.responsive<double>(
-            context,
-            mobile: 16,
-            tablet: 18,
-            desktop: 20,
-          ),
-        ),
-        color: isDarkMode ? Colors.black.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.9),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: ResponsiveBreakpoints.responsive<double>(
-              context,
-              mobile: 10,
-              tablet: 12,
-              desktop: 15,
-            ),
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-          ResponsiveBreakpoints.responsive<double>(
-            context,
-            mobile: 16,
-            tablet: 18,
-            desktop: 20,
-          ),
-        ),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-          child: Padding(
-            padding: ResponsiveBreakpoints.responsivePadding(
-              context,
-              mobile: const EdgeInsets.symmetric(vertical: 8),
-              tablet: const EdgeInsets.symmetric(vertical: 10),
-              desktop: const EdgeInsets.symmetric(vertical: 12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildNavItem(0, Icons.lock_outline, 'Passwords', isDarkMode),
-                _buildNavItem(1, Icons.link, 'Links', isDarkMode),
-                _buildCenterAddButton(),
-                _buildNavItem(2, Icons.favorite_border, 'Favorites', isDarkMode),
-                _buildNavItem(3, Icons.person_outline, 'Profile', isDarkMode),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCenterAddButton() {
-    return GestureDetector(
-      onTap: _showAddOptionsBottomSheet,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 4), // slight lift
-        padding: EdgeInsets.all(
-          ResponsiveBreakpoints.responsive<double>(
-            context,
-            mobile: 14,
-            tablet: 16,
-            desktop: 18,
-          ),
-        ),
-        decoration: BoxDecoration(
-          color: _colors['primary'],
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: _colors['primary']!.withValues(alpha: 0.4),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(
-          Icons.add,
-          color: Colors.white,
-          size: ResponsiveBreakpoints.responsive<double>(
-            context,
-            mobile: 24,
-            tablet: 28,
-            desktop: 32,
-          ),
-        ),
-      ),
-    );
-  }
-
   void _showAddOptionsBottomSheet() {
     showModalBottomSheet(
       context: context,
@@ -567,65 +480,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildNavItem(int index, IconData icon, String label, bool isDarkMode) {
-    final isActive = _currentIndex == index;
-    final activeColor = _colors['primary']!;
-    final inactiveColor = isDarkMode ? Colors.white70 : Colors.grey;
-
-    return GestureDetector(
-      onTap: () => _onTabTapped(index),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: EdgeInsets.all(
-              ResponsiveBreakpoints.responsive<double>(
-                context,
-                mobile: 8,
-                tablet: 10,
-                desktop: 12,
-              ),
-            ),
-            decoration: BoxDecoration(
-              color: isActive ? activeColor.withValues(alpha: 0.2) : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(
-              icon,
-              color: isActive ? activeColor : inactiveColor,
-              size: ResponsiveBreakpoints.responsive<double>(
-                context,
-                mobile: 24,
-                tablet: 26,
-                desktop: 28,
-              ),
-            ),
-          ),
-          SizedBox(height: ResponsiveBreakpoints.responsive<double>(
-            context,
-            mobile: 4,
-            tablet: 5,
-            desktop: 6,
-          )),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: ResponsiveBreakpoints.responsiveFontSize(
-                context,
-                mobile: 12,
-                tablet: 13,
-                desktop: 14,
-              ),
-              color: isActive ? activeColor : inactiveColor,
-              fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
-            ),
-          ),
-        ],
       ),
     );
   }

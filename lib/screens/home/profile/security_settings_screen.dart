@@ -3,18 +3,8 @@ import 'package:local_auth/local_auth.dart';
 import '../../../services/auth_service.dart';
 import '../../onboarding/pin_setup_screen.dart';
 import '../../../utils/helpers.dart';
+import '../../../utils/modern_colors.dart';
 
-// Modern Light Blue Color Scheme
-class ModernColors {
-  static const Color primaryBlue = Color(0xFF2196F3);
-  static const Color lightBlue = Color(0xFFE3F2FD);
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color lightGrey = Color(0xFFF5F5F5);
-  static const Color textDark = Color(0xFF212121);
-  static const Color textLight = Color(0xFF757575);
-  static const Color success = Color(0xFF4CAF50);
-  static const Color error = Color(0xFFF44336);
-}
 
 class SecuritySettingsScreen extends StatefulWidget {
   const SecuritySettingsScreen({super.key});
