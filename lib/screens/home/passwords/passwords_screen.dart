@@ -298,29 +298,6 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 40),
-              if (noPasswords)
-                ElevatedButton.icon(
-                  onPressed: _navigateToAddPassword,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Your First Password'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ModernColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    textStyle: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),

@@ -397,44 +397,6 @@ class _LinksScreenState extends State<LinksScreen> {
                 tablet: 44,
                 desktop: 48,
               )),
-              if (noLinks)
-                ElevatedButton.icon(
-                  onPressed: _navigateToAddLink,
-                  icon: const Icon(Icons.add),
-                  label: const Text('Add Your First Link'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: ModernColors.primary,
-                    foregroundColor: Colors.white,
-                    padding: EdgeInsets.symmetric(
-                      horizontal: ResponsiveBreakpoints.responsive<double>(
-                        context,
-                        mobile: 24,
-                        tablet: 28,
-                        desktop: 32,
-                      ),
-                      vertical: ResponsiveBreakpoints.responsive<double>(
-                        context,
-                        mobile: 16,
-                        tablet: 18,
-                        desktop: 20,
-                      ),
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 2,
-                    textStyle: TextStyle(
-                      fontSize: ResponsiveBreakpoints.responsiveFontSize(
-                        context,
-                        mobile: 16,
-                        tablet: 18,
-                        desktop: 20,
-                      ),
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: 0.5,
-                    ),
-                  ),
-                ),
             ],
           ),
         ),
