@@ -499,7 +499,7 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
         ),
       ),
       subtitle: Text(
-        _obscurePassword ? '••••••••' : widget.password.password,
+        _obscurePassword ? '••••••••' : context.read<DataProvider>().getDecryptedPassword(widget.password),
         style: Theme.of(context).textTheme.bodyMedium,
       ),
       trailing: Row(
@@ -511,10 +511,26 @@ class _PasswordDetailScreenState extends State<PasswordDetailScreen> {
               color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
               size: 20,
             ),
-            onPressed: () {
-              setState(() {
-                _obscurePassword = !_obscurePassword;
-              });
+            onPressed: () async {
+              if (_obscurePassword) {
+                // Authenticate before revealing password
+                final authenticated = await AuthService.showAuthDialog(
+                  context,
+                  reason: 'Authenticate to view password',
+                );
+                
+                if (authenticated) {
+                  setState(() {
+                    _obscurePassword = false;
+                  });
+                  // Log password view activity
+                  context.read<DataProvider>().logPasswordViewed(widget.password);
+                }
+              } else {
+                setState(() {
+                  _obscurePassword = true;
+                });
+              }
             },
             splashRadius: 20,
           ),

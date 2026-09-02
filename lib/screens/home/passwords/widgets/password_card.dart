@@ -66,10 +66,8 @@ class PasswordCard extends StatelessWidget {
         // Content
         Expanded(child: _buildContent(context, compact: true)),
         
-        // Actions and Arrow
-        _buildActions(context),
-        const SizedBox(width: 8),
-        _buildArrow(context),
+        // Trailing Actions
+        _buildTrailingActions(context),
       ],
     );
   }
@@ -92,7 +90,7 @@ class PasswordCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingM),
@@ -126,7 +124,7 @@ class PasswordCard extends StatelessWidget {
                 ],
               ),
             ),
-            _buildActions(context),
+            _buildTrailingActions(context),
           ],
         ),
         const SizedBox(height: AppConstants.spacingL),
@@ -199,17 +197,6 @@ class PasswordCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        if (password.isFavorite)
-          Icon(
-            AppConstants.iconFavorite,
-            color: AppConstants.primaryColor,
-            size: ResponsiveBreakpoints.responsive<double>(
-              context,
-              mobile: 16,
-              tablet: 18,
-              desktop: 20,
-            ),
-          ),
       ],
     );
   }
@@ -301,6 +288,35 @@ class PasswordCard extends StatelessWidget {
     );
   }
 
+  Widget _buildTrailingActions(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        IconButton(
+          icon: Icon(
+            password.isFavorite ? Icons.favorite : Icons.favorite_border,
+            color: password.isFavorite ? AppConstants.primaryColor : Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.3),
+            size: 20,
+          ),
+          onPressed: () => onAction?.call('favorite', password),
+          constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+          padding: EdgeInsets.zero,
+          splashRadius: 20,
+        ),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildActions(context),
+            if (ResponsiveBreakpoints.isMobile(context))
+              _buildArrow(context),
+          ],
+        ),
+      ],
+    );
+  }
+
   Widget _buildActions(BuildContext context) {
     return Consumer<DataProvider>(
       builder: (context, dataProvider, child) {
@@ -348,19 +364,6 @@ class PasswordCard extends StatelessWidget {
                   ],
                 ),
               ),
-            PopupMenuItem(
-              value: 'favorite',
-              child: Row(
-                children: [
-                  Icon(
-                    password.isFavorite ? Icons.favorite_border : Icons.favorite,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 12),
-                  Text(password.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'),
-                ],
-              ),
-            ),
             const PopupMenuItem(
               value: 'edit',
               child: Row(
