@@ -222,7 +222,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                       return ListView.builder(
                         controller: _scrollController,
                         physics: const AlwaysScrollableScrollPhysics(),
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
                         itemCount: passwords.length,
                         itemBuilder: (context, index) {
                           final password = passwords[index];
@@ -232,7 +232,7 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
                             opacity: 1.0,
                             curve: Curves.easeInOut,
                             child: Padding(
-                              padding: const EdgeInsets.only(bottom: 12, left: 0, right: 0),
+                              padding: const EdgeInsets.only(bottom: 6, left: 0, right: 0),
                               child: PasswordCard(
                                 password: password,
                                 onTap: () => _navigateToPasswordDetail(password),
