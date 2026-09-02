@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:math' as math;
+import 'dart:ui' as ui;
 import '../services/onboarding_service.dart';
 import '../services/encryption_service.dart';
 import '../utils/responsive.dart';
@@ -62,7 +64,7 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   Future<void> _navigateAfterDelay() async {
-    await Future.delayed(const Duration(seconds: 2));
+    await Future.delayed(const Duration(seconds: 3));
 
     if (!mounted) return;
 
@@ -186,9 +188,10 @@ class _SplashScreenState extends State<SplashScreen>
                             desktop: 32,
                           )),
 
-                          // App Name
-                          Text(
-                            'LinkCrypta',
+                          // App Name (Animated Letters)
+                          AnimatedLettersText(
+                            text: 'LinkCrypta',
+                            animation: _controller,
                             style: TextStyle(
                               fontSize: ResponsiveBreakpoints.responsiveFontSize(
                                 context,
@@ -264,3 +267,88 @@ class _SplashScreenState extends State<SplashScreen>
     );
   }
 }
+
+class AnimatedLettersText extends StatefulWidget {
+  final String text;
+  final TextStyle style;
+  final Animation<double> animation;
+
+  const AnimatedLettersText({
+    super.key,
+    required this.text,
+    required this.style,
+    required this.animation,
+  });
+
+  @override
+  State<AnimatedLettersText> createState() => _AnimatedLettersTextState();
+}
+
+class _AnimatedLettersTextState extends State<AnimatedLettersText> {
+  final List<Offset> _randomOffsets = [];
+  final List<double> _randomRotations = [];
+  final math.Random _random = math.Random(42); // Fixed seed for consistent animation
+
+  @override
+  void initState() {
+    super.initState();
+    // Generate random start positions and rotations for each letter
+    for (int i = 0; i < widget.text.length; i++) {
+      // Pick a random angle (0 to 360 degrees in radians)
+      double angle = _random.nextDouble() * 2 * math.pi;
+      // Distance far outside typical screen boundaries (800 to 1200 pixels)
+      double distance = 800 + _random.nextDouble() * 400;
+      
+      double dx = math.cos(angle) * distance;
+      double dy = math.sin(angle) * distance;
+      
+      _randomOffsets.add(Offset(dx, dy));
+      
+      // Random rotation
+      _randomRotations.add(_random.nextDouble() * 4 * math.pi - 2 * math.pi);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: widget.animation,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(widget.text.length, (index) {
+            // Stagger animation: each letter starts a bit later
+            final double start = (index / widget.text.length) * 0.4; // 0.0 to 0.4
+            final double end = start + 0.6; // 0.6 to 1.0
+            
+            double progress = (widget.animation.value - start) / (end - start);
+            progress = progress.clamp(0.0, 1.0);
+            
+            // Apply curve to progress
+            final curvedProgress = Curves.easeOutBack.transform(progress);
+            
+            // Interpolate position and rotation
+            final offset = Offset.lerp(_randomOffsets[index], Offset.zero, curvedProgress)!;
+            final rotation = ui.lerpDouble(_randomRotations[index], 0, curvedProgress)!;
+            final opacity = progress.clamp(0.0, 1.0);
+            
+            return Transform.translate(
+              offset: offset,
+              child: Transform.rotate(
+                angle: rotation,
+                child: Opacity(
+                  opacity: opacity,
+                  child: Text(
+                    widget.text[index],
+                    style: widget.style,
+                  ),
+                ),
+              ),
+            );
+          }),
+        );
+      },
+    );
+  }
+}
+

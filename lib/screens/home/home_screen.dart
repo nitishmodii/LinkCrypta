@@ -158,13 +158,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               ),
               Row(
                 children: [
-                  _buildThemeToggleButton(isDarkMode),
-                  SizedBox(width: ResponsiveBreakpoints.responsive<double>(
-                    context,
-                    mobile: 12,
-                    tablet: 16,
-                    desktop: 20,
-                  )),
                   _buildHeaderButton(
                     icon: Icons.notifications_outlined,
                     onTap: () {},
@@ -202,32 +195,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  Widget _buildThemeToggleButton(bool isDarkMode) {
-    return Consumer<ThemeProvider>(
-      builder: (context, themeProvider, child) {
-        return Container(
-          decoration: BoxDecoration(
-            color: isDarkMode ? Colors.white.withValues(alpha: 0.1) : Colors.white,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: Icon(
-              themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
-              color: isDarkMode ? Colors.white : _colors['primary'],
-            ),
-            onPressed: () => themeProvider.toggleTheme(),
-          ),
-        );
-      },
-    );
-  }
+
 
   Widget _buildHeaderButton({
     required IconData icon,
