@@ -97,10 +97,6 @@ class _LinksScreenState extends State<LinksScreen> {
               });
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.add, color: Colors.white),
-            onPressed: _navigateToAddLink,
-          ),
         ],
       ),
       body: ResponsiveLayout(
@@ -216,30 +212,6 @@ class _LinksScreenState extends State<LinksScreen> {
               ),
             ),
           ],
-        ),
-      ),
-      floatingActionButton: Padding(
-        padding: EdgeInsets.only(
-          bottom: ResponsiveBreakpoints.isDesktop(context) ? 24 : 16, 
-          right: ResponsiveBreakpoints.isDesktop(context) ? 16 : 8,
-        ),
-        child: FloatingActionButton.extended(
-          backgroundColor: ModernColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          onPressed: _navigateToAddLink,
-          icon: const Icon(Icons.add, size: 24),
-          label: Text(
-            'Add Link',
-            style: TextStyle(
-              fontWeight: FontWeight.w600, 
-              letterSpacing: 0.5,
-              fontSize: ResponsiveBreakpoints.responsiveFontSize(context, mobile: 14, desktop: 16),
-            ),
-          ),
         ),
       ),
     );

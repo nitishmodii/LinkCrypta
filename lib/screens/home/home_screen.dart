@@ -7,8 +7,9 @@ import '../../utils/responsive.dart';
 import 'passwords/passwords_screen.dart';
 import 'links/links_screen.dart';
 import 'favorites/favorites_screen.dart';
-import 'advanced_features_screen.dart';
 import 'profile/profile_screen.dart';
+import 'passwords/add_password_screen.dart';
+import 'links/widgets/add_edit_link_dialog.dart';
 import 'dart:ui';
 
 class HomeScreen extends StatefulWidget {
@@ -38,7 +39,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     const PasswordsScreen(),
     const LinksScreen(),
     const FavoritesScreen(),
-    const AdvancedFeaturesScreen(),
     const ProfileScreen(),
   ];
 
@@ -424,12 +424,180 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
               children: [
                 _buildNavItem(0, Icons.lock_outline, 'Passwords', isDarkMode),
                 _buildNavItem(1, Icons.link, 'Links', isDarkMode),
+                _buildCenterAddButton(),
                 _buildNavItem(2, Icons.favorite_border, 'Favorites', isDarkMode),
-                _buildNavItem(3, Icons.security, 'Advanced', isDarkMode),
-                _buildNavItem(4, Icons.person_outline, 'Profile', isDarkMode),
+                _buildNavItem(3, Icons.person_outline, 'Profile', isDarkMode),
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCenterAddButton() {
+    return GestureDetector(
+      onTap: _showAddOptionsBottomSheet,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 4), // slight lift
+        padding: EdgeInsets.all(
+          ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 14,
+            tablet: 16,
+            desktop: 18,
+          ),
+        ),
+        decoration: BoxDecoration(
+          color: _colors['primary'],
+          shape: BoxShape.circle,
+          boxShadow: [
+            BoxShadow(
+              color: _colors['primary']!.withValues(alpha: 0.4),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(
+          Icons.add,
+          color: Colors.white,
+          size: ResponsiveBreakpoints.responsive<double>(
+            context,
+            mobile: 24,
+            tablet: 28,
+            desktop: 32,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showAddOptionsBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1E293B) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Create New',
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 24),
+              _buildAddOptionTile(
+                context,
+                title: 'Add Password',
+                subtitle: 'Securely store a new login',
+                icon: Icons.password_rounded,
+                color: _colors['primary']!,
+                isDark: isDark,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddPasswordScreen(),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+              _buildAddOptionTile(
+                context,
+                title: 'Add Link',
+                subtitle: 'Save a secure encrypted bookmark',
+                icon: Icons.link_rounded,
+                color: _colors['secondary']!,
+                isDark: isDark,
+                onTap: () {
+                  Navigator.pop(context);
+                  showDialog(
+                    context: context,
+                    builder: (context) => const AddEditLinkDialog(),
+                  );
+                },
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAddOptionTile(BuildContext context, {
+    required String title,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : color.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: color.withValues(alpha: 0.2),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: isDark ? Colors.white54 : Colors.black38,
+            ),
+          ],
         ),
       ),
     );

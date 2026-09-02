@@ -251,23 +251,6 @@ class _PasswordsScreenState extends State<PasswordsScreen> {
           ),
         ],
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 16, right: 8),
-        child: FloatingActionButton.extended(
-          backgroundColor: ModernColors.primary,
-          foregroundColor: Colors.white,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          onPressed: _navigateToAddPassword,
-          icon: const Icon(Icons.add, size: 24),
-          label: const Text(
-            'Add Password',
-            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
-          ),
-        ),
-      ),
     );
   }
 
